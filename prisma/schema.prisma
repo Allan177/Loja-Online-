@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id         String    @id @default(cuid())
+  nome       String
+  email      String    @unique
+  senhaHash  String
+  pedidos    Pedido[]
+  criadoEm   DateTime  @default(now())
+}
+
+model Produto {
+  id          Int              @id @default(autoincrement())
+  nome        String
+  descricao   String
+  preco       Float
+  imagemUrl   String
+  criadoEm    DateTime         @default(now())
+  categoria   Categoria?       @relation(fields: [categoriaId], references: [id])
+  categoriaId String?          // corrigido para bater com Categoria.id
+  pedidos     PedidoProduto[]  // lado inverso da relação
+}
+
+model Categoria {
+  id        String     @id @default(cuid())
+  nome      String
+  produtos  Produto[]
+}
+
+model Pedido {
+  id         String           @id @default(cuid())
+  usuario    Usuario          @relation(fields: [usuarioId], references: [id])
+  usuarioId  String
+  produtos   PedidoProduto[]
+  criadoEm   DateTime         @default(now())
+}
+
+model PedidoProduto {
+  id         String    @id @default(cuid())
+  pedido     Pedido    @relation(fields: [pedidoId], references: [id])
+  pedidoId   String
+  produto    Produto   @relation(fields: [produtoId], references: [id])
+  produtoId  Int       // corrigido para bater com Produto.id
+  quantidade Int
+}
